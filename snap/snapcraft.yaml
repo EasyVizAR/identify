@@ -45,12 +45,6 @@ parts:
         - libcuda1-384
         - libcudart10.1
 
-  setup:
-    plugin: dump
-    source: setup
-    organize:
-      '*.txt': setup/
-
   identify:
     plugin: python
     source: .
