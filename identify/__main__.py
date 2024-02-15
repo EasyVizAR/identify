@@ -95,10 +95,16 @@ def run_recognition(img, users):
 
     annotations = []
     for df in dfs:
-        identity = df.at[0, "identity"]
-        containing_dir = identity.split("/")[-2]
+        if len(df) == 0:
+            continue
 
-        confidence = 1.0 - df.at[0, "distance"]
+        try:
+            identity = df.at[0, "identity"]
+            containing_dir = identity.split("/")[-2]
+
+            confidence = 1.0 - df.at[0, "distance"]
+        except:
+            continue
 
         annotations.append({
             "identified_user_id": containing_dir,
