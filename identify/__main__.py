@@ -68,7 +68,7 @@ def run_recognition(img, users):
         "model_repo": "deepface",
         "model_name": "{}+{}".format(DETECTOR_BACKEND, MODEL_NAME),
         "engine_name": "deepface",
-        "engine_version": "",
+        "engine_version": DeepFace.__version__,
         "torchvision_version": "",
         "torch_version": "",
         "cuda_enabled": False,
@@ -102,20 +102,29 @@ def run_recognition(img, users):
             identity = df.at[0, "identity"]
             containing_dir = identity.split("/")[-2]
 
-            confidence = 1.0 - df.at[0, "distance"]
+            confidence = np.exp(-df.at[0, "distance"])
+
+            face_width = df.at[0, "source_w"]
+            face_height = df.at[0, "source_h"]
         except:
+            continue
+
+        # It seems to be indicative of a negative result if the detector tried
+        # to match the entire image to one of the DB images, even if the
+        # reported distance is low.
+        if face_width >= image_width or face_height >= image_height:
             continue
 
         annotations.append({
             "identified_user_id": containing_dir,
             "label": "face",
-            "sublabel": users.get(containing_dir, ""),
+            "sublabel": users.get(containing_dir, "Unknown"),
             "confidence": confidence,
             "boundary": {
                 "left": float(df.at[0, "source_x"]) / image_width,
                 "top": float(df.at[0, "source_y"]) / image_height,
-                "width": float(df.at[0, "source_w"]) / image_width,
-                "height": float(df.at[0, "source_h"]) / image_height,
+                "width": float(face_width) / image_width,
+                "height": float(face_height) / image_height,
             }
         })
 
